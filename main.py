@@ -1,5 +1,6 @@
 # Import the necessary libraries
 import logging
+from urllib.parse import urlparse, parse_qs
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -86,6 +87,8 @@ pinecone_index = pinecone.Index(index_name=index_name)
 # Initialize OpenAI
 openai.api_key = OPENAI_API_KEY
 
+
+
 # Function to get video details from the YouTube API using the video ID
 def get_video_details(video_id):
     url = "https://www.googleapis.com/youtube/v3/videos"
@@ -105,12 +108,20 @@ def get_video_details(video_id):
     video_title = video_data['items'][0]['snippet']['title']
     return video_title
 
-# Function to extract the video ID from the YouTube URL
 def extract_video_id(url):
-    video_id_pattern = r'(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_\-]+)'
-    match = re.match(video_id_pattern, url)
-
-    return match.group(1) if match else None
+    parsed_url = urlparse(url)
+    
+    if parsed_url.hostname == 'youtu.be':
+        return parsed_url.path[1:]
+    elif parsed_url.hostname in ('www.youtube.com', 'youtube.com'):
+        if parsed_url.path == '/watch':
+            return parse_qs(parsed_url.query)['v'][0]
+        elif parsed_url.path.startswith('/embed/'):
+            return parsed_url.path.split('/')[2]
+        elif parsed_url.path.startswith('/v/'):
+            return parsed_url.path.split('/')[2]
+    else:
+        raise ValueError("Invalid YouTube URL")
 
 # Function to retrieve the video transcript
 def get_video_transcript(video_id):
@@ -165,7 +176,7 @@ def translate_text(text):
 
   
 # Define a function to get video comments from a YouTube video ID
-def get_video_comments(video_id, max_results=10, after=None):
+def get_video_comments(video_id, max_results=3, after=None):
     # Define the URL and query parameters for the YouTube API request
     url = f"https://www.googleapis.com/youtube/v3/commentThreads"
     params = {
@@ -367,8 +378,8 @@ def process():
     # Process one comment at a time
     for index, comment in enumerate(video_comments):
       # Add a break statement to stop processing after 10 comments
-        if index >= 10:
-        break
+        if index >= 3:
+          break
         comment_text = comment['translated']
 
         # Use the agent to decide whether to reply and generate a reply if necessary
