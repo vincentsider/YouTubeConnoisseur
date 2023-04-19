@@ -165,7 +165,7 @@ def translate_text(text):
 
   
 # Define a function to get video comments from a YouTube video ID
-def get_video_comments(video_id, max_results=100, after=None):
+def get_video_comments(video_id, max_results=10, after=None):
     # Define the URL and query parameters for the YouTube API request
     url = f"https://www.googleapis.com/youtube/v3/commentThreads"
     params = {
@@ -366,6 +366,9 @@ def process():
   
     # Process one comment at a time
     for index, comment in enumerate(video_comments):
+      # Add a break statement to stop processing after 10 comments
+        if index >= 10:
+        break
         comment_text = comment['translated']
 
         # Use the agent to decide whether to reply and generate a reply if necessary
