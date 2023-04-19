@@ -19,6 +19,7 @@ google-auth-oauthlib = "^1.0.0"
 langdetect = "^1.0.9"
 tiktoken = "^0.3.3"
 Flask-SocketIO = "^5.3.3"
+sentence-transformers = "^2.2.2"
 
 [tool.poetry.dev-dependencies]
 debugpy = "^1.6.2"

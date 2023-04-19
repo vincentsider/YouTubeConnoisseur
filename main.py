@@ -45,6 +45,7 @@ from langchain.schema import (
     SystemMessage
 )
 from langchain.llms import OpenAI
+from transformers import GPT2Tokenizer
 
 #client_secret_file = 'client_secret_1911968826-ch6c77gbacv8jc2bmie7b7qa9529o8ld.apps.googleusercontent.com.json'
 #scopes = ['https://www.googleapis.com/auth/youtube.force-ssl']
@@ -174,7 +175,6 @@ def translate_text(text):
         print(f"Error translating text: {e}")
         return ''
 
-  
 # Define a function to get video comments from a YouTube video ID
 def get_video_comments(video_id, max_results=3, after=None):
     # Define the URL and query parameters for the YouTube API request
@@ -381,9 +381,13 @@ def process():
         if index >= 3:
           break
         comment_text = comment['translated']
+        tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
-        # Use the agent to decide whether to reply and generate a reply if necessary
-        agent_input = {"input": comment_text, "transcript": video_transcript}
+        # Truncate the transcript to a certain number of tokens, e.g., 3000
+        transcript_tokens = tokenizer.tokenize(video_transcript)
+        truncated_transcript = tokenizer.convert_tokens_to_string(transcript_tokens[:3000])
+        # Use the truncated_transcript in the agent_input
+        agent_input = {"input": comment_text, "transcript": truncated_transcript}
         intermediate_steps = []  # Define intermediate_steps as an empty list
         agent_output = agent.plan(intermediate_steps, **agent_input)
         decision = agent_output['decision']
