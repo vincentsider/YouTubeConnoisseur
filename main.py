@@ -413,10 +413,6 @@ def process():
     }
 )
         #break
-
-    # Return the results as an HTML formatted string and a return statement to handle cases where no response is generated
-    return jsonify({"results": results if results else "No response generated for any comment."})
-
     # Generate embedding and upsert to Pinecone
     embedding = generate_embedding(video_transcript)
     if embedding is not None:
@@ -426,7 +422,10 @@ def process():
         ids_batch = [video_id_hash_str]
         embeds = [embedding_array.astype(float).tolist()]
         to_upsert = zip(ids_batch, embeds)
-        pinecone_index.upsert(vectors=list(to_upsert))
+        pinecone_index.upsert(vectors=list(to_upsert))  
+
+    # Return the results as an HTML formatted string and a return statement to handle cases where no response is generated
+    return jsonify({"results": results if results else "No response generated for any comment."})
 
 # Start the Flask app
 if __name__ == '__main__':
