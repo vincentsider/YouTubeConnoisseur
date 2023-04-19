@@ -198,7 +198,7 @@
                 <div id="form-wrapper">
                     <form id="video-url-form">
                         <div class="form-group">
-                            <label for="video_url">Enter Video URL:</label>
+                            <label for="video_url">Enter YouTube URL <br> (and give us 1 or 2 minutes, we're working our magic!)</label>
                             <input type="text" class="form-control" id="video_url" name="video_url"
                                 placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX">
                         </div>
@@ -237,48 +237,60 @@
     </style>
 
     <script>
-        $(document).ready(function () {
-            $("#video-url-form").submit(function (event) {
-                event.preventDefault();
-                const video_url = $("#video_url").val();
-                $("#loading-animation").show();
-                // Replace '/process' with your actual API endpoint
-                $.post("/process", { video_url: video_url }, function (data) {
-                    $("#loading-animation").hide();
-                    if (data.results) {
-                        let resultsHTML = "";
-                        for (const result of data.results) {
-                            if (result.comment && result.decision) {
-                                resultsHTML += `
-                                    <div class="card mb-3">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Comment:</h5>
-                                            <p class="card-text">${result.comment}</p>
-                                            <h5 class="card-title">Decision:</h5>
-                                            <p class="card-text">${result.decision}</p>`;
-                                if (result.response) {
-                                    resultsHTML += `
-                                        <h5 class="card-title">Response:</h5>
-                                        <p class="card-text">${result.response}</p>`;
-                                }
-                                resultsHTML += `</div></div>`;
-                            }
-                        }
-                        $("#results").html(resultsHTML);
-                        $("#form-wrapper").hide();
-                        $("#results-wrapper").show();
-                    } else {
-                        $("#results").html("Error: " + data);
-                    }
-                });
-            });
+    function isValidYouTubeUrl(url) {
+        const regex = /^((?:https?:)?\/\/)?((?:www|m)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w\-]+\?v=|embed\/|v\/)?)([\w\-]+)(\S+)?$/;
+        return regex.test(url);
+    }
 
-            $("#back-to-form").click(function () {
-                $("#results-wrapper").hide();
-                $("#form-wrapper").show();
+    $(document).ready(function () {
+        $("#video-url-form").submit(function (event) {
+            event.preventDefault();
+            const video_url = $("#video_url").val();
+
+            if (!isValidYouTubeUrl(video_url)) {
+                alert("Please enter a valid YouTube URL.");
+                return;
+            }
+
+            $("#loading-animation").show();
+            // Replace '/process' with your actual API endpoint
+            $.post("/process", { video_url: video_url }, function (data) {
+                $("#loading-animation").hide();
+                if (data.results) {
+                    let resultsHTML = "";
+                    for (const result of data.results) {
+                        if (result.comment && result.decision) {
+                            resultsHTML += `
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Comment:</h5>
+                                        <p class="card-text">${result.comment}</p>
+                                        <h5 class="card-title">Decision:</h5>
+                                        <p class="card-text">${result.decision}</p>`;
+                            if (result.response) {
+                                resultsHTML += `
+                                    <h5 class="card-title">Response:</h5>
+                                    <p class="card-text">${result.response}</p>`;
+                            }
+                            resultsHTML += `</div></div>`;
+                        }
+                    }
+                    $("#results").html(resultsHTML);
+                    $("#form-wrapper").hide();
+                    $("#results-wrapper").show();
+                } else {
+                    $("#results").html("Error: " + data);
+                }
             });
         });
-    </script>
+
+        $("#back-to-form").click(function () {
+            $("#results-wrapper").hide();
+            $("#form-wrapper").show();
+        });
+    });
+</script>
+
 </body>
 </html>
 
