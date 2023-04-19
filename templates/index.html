@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Agent</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        
+    #loading-animation {
+        display: none;
+    }
+
+.container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* Remove display: flex; */
+            /* display: flex; */
+            flex-direction: column; /* Add this */
+            align-items: center; /* Add this */
+        }
+/* Add this new style */
+        #video-url-form .form-control {
+            width: 100%;
+        }
+.dash {
+  margin: 0 15px;
+  width: 35px;
+  height: 15px;
+  border-radius: 8px;
+  background: #FF2CBD;
+  box-shadow: 0 0 10px 0 #FECDFF;
+}
+
+.uno {
+  margin-right: -18px;
+  transform-origin: center left;
+  animation: spin 3s linear infinite;  
+}
+
+.dos {
+  transform-origin: center right;
+  animation: spin2 3s linear infinite;
+  animation-delay: .2s;
+}
+
+.tres {
+  transform-origin: center right;
+  animation: spin3 3s linear infinite;
+  animation-delay: .3s;
+}
+
+.cuatro {
+  transform-origin: center right;
+  animation: spin4 3s linear infinite;
+  animation-delay: .4s;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(360deg);
+  }
+  30% {
+    transform: rotate(370deg);
+  }
+  35% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin2 {
+  0% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(-180deg);
+  }
+  35% {
+    transform: rotate(-190deg);
+  }
+  40% {
+    transform: rotate(-180deg);
+  }
+  78% {
+    transform: rotate(-180deg);
+  }
+  95% {
+    transform: rotate(-360deg);
+  }
+  98% {
+    transform: rotate(-370deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes spin3 {
+  0% {
+    transform: rotate(0deg);
+  }
+  27% {
+    transform: rotate(0deg);  
+  }
+  40% {
+    transform: rotate(180deg);
+  }
+  45% {
+    transform: rotate(190deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  62% {
+    transform: rotate(180deg);
+  }
+  75% {
+    transform: rotate(360deg);
+  }
+  80% {
+    transform: rotate(370deg);
+  }
+  85% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin4 {
+  0% {
+    transform: rotate(0deg);
+  }
+  38% {
+    transform: rotate(0deg);
+  }
+  60% {
+    transform: rotate(-360deg);
+  }
+  65% {
+    transform: rotate(-370deg);
+  }
+  75% {
+    transform: rotate(-360deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
+
+    </style>
+</head>
+<body>
+<div class="container">
+  <div class="row mt-5 justify-content-center">
+    <div class="col-md-8 text-center">
+      <h1 class="display-4">YouTube Agent</h1>
+    </div>
+  </div>
+  <div class="row mt-5 justify-content-center">
+    <div class="col-md-8">
+      <form id="video-url-form">
+        <div class="form-group">
+          <label for="video_url">Enter Video URL:</label>
+          <input type="text" class="form-control" id="video_url" name="video_url" placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX">
+        </div>
+        <button type="submit" class="btn btn-primary">Analyze Comments</button>
+      </form>
+            <div class="row mt-3">
+                <div class="col-md-12 d-flex justify-content-center">
+                    <div id="loading-animation" class="text-center">
+                        <div class="dash uno"></div>
+                        <div class="dash dos"></div>
+                        <div class="dash tres"></div>
+                        <div class="dash cuatro"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="results-wrapper mt-5">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3></h3>
+                        <div id="results" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+</style>
+
+    <script>
+        $(document).ready(function() {
+            $("#video-url-form").submit(function(event) {
+                event.preventDefault();
+                const video_url = $("#video_url").val();
+                $("#loading-animation").show();
+                $.post("/process", { video_url: video_url }, function(data) {
+                    $("#loading-animation").hide();
+                    if (data.results) {
+                        let resultsHTML = "";
+                        for (const result of data.results) {
+                            if (result.comment && result.decision) {
+                                resultsHTML += `
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Comment:</h5>
+                                            <p class="card-text">${result.comment}</p>
+                                            <h5 class="card-title">Decision:</h5>
+                                            <p class="card-text">${result.decision}</p>`;
+                                if (result.response) {
+                                    resultsHTML += `
+                                        <h5 class="card-title">Response:</h5>
+                                        <p class="card-text">${result.response}</p>`;
+                                }
+                                resultsHTML += `</div></div>`;
+                            }
+                        }
+                        $("#results").html(resultsHTML);
+                    } else {
+                        $("#results").html("Error: " + data);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
